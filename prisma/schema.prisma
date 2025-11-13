@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model University {
+  id        String    @id @map("_id") @default(auto()) @db.ObjectId
+  name      String    @unique
+  domain    String
+  students  Student[]
+  createdAt DateTime  @default(now())
+}
+
+model Student {
+  id           String    @id @map("_id") @default(auto()) @db.ObjectId
+  name         String
+  email        String    @unique
+  passwordHash String
+  registration String?
+  university   University @relation(fields: [universityId], references: [id])
+  universityId String
+  role         Role      @default(STUDENT)
+  createdAt    DateTime  @default(now())
+}
+
+model Driver {
+  id           String   @id @map("_id") @default(auto()) @db.ObjectId
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(DRIVER)
+  buses        Bus[]
+  createdAt    DateTime @default(now())
+}
+
+model Route {
+  id          String  @id @map("_id") @default(auto()) @db.ObjectId
+  name        String  @unique
+  description String?
+  stops       String
+  buses       Bus[]
+  createdAt   DateTime @default(now())
+}
+
+model Bus {
+  id        String     @id @map("_id") @default(auto()) @db.ObjectId
+  plate     String     @unique
+  model     String?
+  driver    Driver?    @relation(fields: [driverId], references: [id])
+  driverId  String?
+  route     Route?     @relation(fields: [routeId], references: [id])
+  routeId   String?
+  locations Location[]
+  createdAt DateTime   @default(now())
+}
+
+model Location {
+  id        String   @id @map("_id") @default(auto()) @db.ObjectId
+  bus       Bus      @relation(fields: [busId], references: [id])
+  busId     String
+  latitude  Float
+  longitude Float
+  timestamp DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+  DRIVER
+}
